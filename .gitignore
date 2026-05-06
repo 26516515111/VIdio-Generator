@@ -40,6 +40,9 @@ yarn-error.log*
 *.db
 *.sqlite
 
+# Generated audio files
+backend/data/audio/*.mp3
+
 # PyInstaller
 *.manifest
 *.spec
