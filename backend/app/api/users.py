@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
@@ -27,8 +27,8 @@ class UserResponse(BaseModel):
 
 
 class ApiKeyCreate(BaseModel):
-    service_type: str
-    provider: str
+    service_type: Literal["ocr", "llm", "tts"]
+    provider: Literal["xiaomi", "openai", "baidu", "tencent"]
     api_key: str
     is_default: bool = False
 

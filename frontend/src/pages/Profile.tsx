@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Button, Select, message, List, Tag, Popconfirm } from 'antd';
+import { Card, Form, Input, Button, Select, Switch, message, List, Tag, Popconfirm } from 'antd';
 import { UserOutlined, KeyOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
@@ -98,11 +98,8 @@ const Profile: React.FC = () => {
           >
             <Input.Password prefix={<KeyOutlined />} placeholder="输入API密钥" />
           </Form.Item>
-          <Form.Item name="is_default" label="设为默认" initialValue={false}>
-            <Select>
-              <Option value={true}>是</Option>
-              <Option value={false}>否</Option>
-            </Select>
+          <Form.Item name="is_default" label="设为默认" valuePropName="checked">
+            <Switch />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>
