@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -7,6 +9,8 @@ from ..api.auth import get_current_user
 from ..database import get_db
 from ..models.user import User
 from ..services.llm_service import llm_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/llm", tags=["llm"])
 
@@ -44,4 +48,5 @@ async def process_text(
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Failed to process text")
+        raise HTTPException(status_code=500, detail="Internal server error")

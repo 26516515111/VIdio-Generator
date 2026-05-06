@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Optional
 
@@ -10,6 +11,8 @@ from ..api.auth import get_current_user
 from ..database import get_db
 from ..models.user import User
 from ..services.tts_service import tts_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/tts", tags=["tts"])
 
@@ -45,16 +48,19 @@ async def synthesize_speech(
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Failed to synthesize speech")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/audio/{filename}")
 async def get_audio(filename: str):
     """获取生成的音频文件"""
-    audio_path = Path("data/audio") / filename
+    # Prevent path traversal
+    safe_name = Path(filename).name
+    audio_path = Path("data/audio") / safe_name
     if not audio_path.exists():
         raise HTTPException(status_code=404, detail="Audio file not found")
 
     return FileResponse(
-        path=str(audio_path), media_type="audio/mpeg", filename=filename
+        path=str(audio_path), media_type="audio/mpeg", filename=safe_name
     )
