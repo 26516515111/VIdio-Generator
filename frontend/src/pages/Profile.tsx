@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Select, Switch, message, List, Tag, Popconfirm } from 'antd';
 import { UserOutlined, KeyOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import type { RootState } from '../store';
 import api from '../services/api';
 
 const { Option } = Select;
