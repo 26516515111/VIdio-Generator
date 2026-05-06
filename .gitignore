@@ -46,6 +46,7 @@ backend/data/audio/*.mp3
 # PyInstaller
 *.manifest
 *.spec
+!backend/pyinstaller.spec
 
 # Testing
 .coverage
