@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api.auth import router as auth_router
 from .api.llm import router as llm_router
+from .api.ocr import router as ocr_router
+from .api.tts import router as tts_router
 from .api.users import router as users_router
 from .database import init_db
 
@@ -20,6 +22,8 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router)
 app.include_router(llm_router)
+app.include_router(ocr_router)
+app.include_router(tts_router)
 app.include_router(users_router)
 
 
