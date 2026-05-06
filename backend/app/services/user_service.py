@@ -1,7 +1,9 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
+from ..models.api_key import ApiKey
+from ..models.history import History
 from ..models.user import User
 
 
@@ -32,6 +34,91 @@ class UserService:
         db.commit()
         db.refresh(user)
         return user
+
+    # API Key methods
+    @staticmethod
+    def add_api_key(
+        db: Session,
+        user_id: int,
+        service_type: str,
+        provider: str,
+        api_key: str,
+        is_default: bool = False,
+    ) -> ApiKey:
+        # 如果设置为默认，先取消其他默认
+        if is_default:
+            db.query(ApiKey).filter(
+                ApiKey.user_id == user_id,
+                ApiKey.service_type == service_type,
+                ApiKey.is_default.is_(True),
+            ).update({"is_default": False})
+
+        db_api_key = ApiKey(
+            user_id=user_id,
+            service_type=service_type,
+            provider=provider,
+            api_key=api_key,
+            is_default=is_default,
+        )
+        db.add(db_api_key)
+        db.commit()
+        db.refresh(db_api_key)
+        return db_api_key
+
+    @staticmethod
+    def get_user_api_keys(
+        db: Session, user_id: int, service_type: Optional[str] = None
+    ) -> List[ApiKey]:
+        query = db.query(ApiKey).filter(ApiKey.user_id == user_id)
+        if service_type:
+            query = query.filter(ApiKey.service_type == service_type)
+        return query.all()
+
+    @staticmethod
+    def get_default_api_key(
+        db: Session, user_id: int, service_type: str
+    ) -> Optional[ApiKey]:
+        return (
+            db.query(ApiKey)
+            .filter(
+                ApiKey.user_id == user_id,
+                ApiKey.service_type == service_type,
+                ApiKey.is_default.is_(True),
+            )
+            .first()
+        )
+
+    @staticmethod
+    def delete_api_key(db: Session, api_key_id: int, user_id: int) -> bool:
+        api_key = (
+            db.query(ApiKey)
+            .filter(ApiKey.id == api_key_id, ApiKey.user_id == user_id)
+            .first()
+        )
+        if api_key:
+            db.delete(api_key)
+            db.commit()
+            return True
+        return False
+
+    # History methods
+    @staticmethod
+    def add_history(db: Session, user_id: int, **kwargs) -> History:
+        db_history = History(user_id=user_id, **kwargs)
+        db.add(db_history)
+        db.commit()
+        db.refresh(db_history)
+        return db_history
+
+    @staticmethod
+    def get_user_history(db: Session, user_id: int, limit: int = 10) -> List[History]:
+        return (
+            db.query(History)
+            .filter(History.user_id == user_id)
+            .order_by(History.created_at.desc())
+            .limit(limit)
+            .all()
+        )
 
 
 user_service = UserService()
