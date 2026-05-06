@@ -3,6 +3,7 @@ import { Layout } from 'antd'
 import { AudioOutlined } from '@ant-design/icons'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Profile from './pages/Profile'
 import UserAuth from './components/UserAuth'
 
 const { Header, Content, Footer } = Layout
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </Content>
       <Footer style={{ textAlign: 'center' }}>
