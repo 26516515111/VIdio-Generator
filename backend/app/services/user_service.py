@@ -19,10 +19,9 @@ class UserService:
         return db.query(User).filter(User.email == email).first()
 
     @staticmethod
-    def update_user(db: Session, user: User, **kwargs) -> User:
-        for key, value in kwargs.items():
-            if hasattr(user, key):
-                setattr(user, key, value)
+    def update_user(db: Session, user: User, email: Optional[str] = None) -> User:
+        if email is not None:
+            user.email = email
         db.commit()
         db.refresh(user)
         return user

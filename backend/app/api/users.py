@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from ..api.auth import get_current_user
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 
 
 class UserUpdate(BaseModel):
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
 
 
 class UserResponse(BaseModel):
@@ -40,4 +40,4 @@ def update_current_user(
     update_data = user_update.model_dump(exclude_unset=True)
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
-    return user_service.update_user(db, current_user, **update_data)
+    return user_service.update_user(db, current_user, email=update_data.get("email"))

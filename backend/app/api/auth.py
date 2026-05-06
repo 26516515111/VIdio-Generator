@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, constr
 from sqlalchemy.orm import Session
 
 from ..database import get_db
@@ -15,9 +15,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/token")
 
 
 class UserCreate(BaseModel):
-    username: str
-    email: str
-    password: str
+    username: constr(min_length=3, max_length=50)
+    email: EmailStr
+    password: constr(min_length=6, max_length=100)
 
 
 class Token(BaseModel):
@@ -34,7 +34,7 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
-async def get_current_user(
+def get_current_user(
     token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 ) -> User:
     credentials_exception = HTTPException(
