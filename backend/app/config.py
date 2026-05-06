@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = f"sqlite:///{Path(__file__).parent.parent / 'data' / 'app.db'}"
     
     # JWT配置
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    SECRET_KEY: str  # No default — will raise ValidationError if missing from .env
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
