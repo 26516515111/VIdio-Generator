@@ -6,6 +6,9 @@ interface InputState {
   scene: string;
   imageUrl: string | null;
   inputType: 'text' | 'image';
+  directorMode: boolean;
+  character: string;
+  direction: string;
 }
 
 const initialState: InputState = {
@@ -13,6 +16,9 @@ const initialState: InputState = {
   scene: '',
   imageUrl: null,
   inputType: 'text',
+  directorMode: false,
+  character: '',
+  direction: '',
 };
 
 const inputSlice = createSlice({
@@ -31,13 +37,25 @@ const inputSlice = createSlice({
     setInputType: (state, action: PayloadAction<'text' | 'image'>) => {
       state.inputType = action.payload;
     },
+    setDirectorMode: (state, action: PayloadAction<boolean>) => {
+      state.directorMode = action.payload;
+    },
+    setCharacter: (state, action: PayloadAction<string>) => {
+      state.character = action.payload;
+    },
+    setDirection: (state, action: PayloadAction<string>) => {
+      state.direction = action.payload;
+    },
     resetInput: (state) => {
       state.text = '';
       state.scene = '';
       state.imageUrl = null;
+      state.directorMode = false;
+      state.character = '';
+      state.direction = '';
     },
   },
 });
 
-export const { setText, setScene, setImageUrl, setInputType, resetInput } = inputSlice.actions;
+export const { setText, setScene, setImageUrl, setInputType, setDirectorMode, setCharacter, setDirection, resetInput } = inputSlice.actions;
 export default inputSlice.reducer;

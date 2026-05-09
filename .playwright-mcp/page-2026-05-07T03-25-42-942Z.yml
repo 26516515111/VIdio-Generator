@@ -1,0 +1,34 @@
+- generic [ref=e4]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - img [ref=e10] [cursor=pointer]
+      - generic [ref=e12]:
+        - generic [ref=e13]: Qwen3.6-Plus
+        - img [ref=e15] [cursor=pointer]
+    - generic [ref=e17]:
+      - generic [ref=e19] [cursor=pointer]: 登录
+      - generic [ref=e21] [cursor=pointer]: 注册
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - generic [ref=e26]: 今天有什么计划？
+      - generic [ref=e28]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                - textbox "有什么我能帮您的吗？"
+                - generic:
+                  - generic:
+                    - generic: 自动
+                    - generic:
+                      - img
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - img
+    - generic [ref=e29]: 使用 Qwen Studio，即表示您同意我们的 用户条款 和 隐私协议。

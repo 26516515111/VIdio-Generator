@@ -21,6 +21,12 @@ class TtsRequest(BaseModel):
     text: str
     voice: str = "default"
     emotion: str = "neutral"
+    style_tags: Optional[str] = None
+    scene: Optional[str] = None
+    character: Optional[str] = None
+    direction: Optional[str] = None
+    custom_voice_type: Optional[str] = None  # "voicedesign" or "voiceclone"
+    custom_voice_data: Optional[str] = None  # Text description or base64 audio
     provider: Optional[str] = None
 
 
@@ -45,6 +51,12 @@ async def synthesize_speech(
             user_id=current_user.id,
             db=db,
             provider=request.provider,
+            style_tags=request.style_tags,
+            scene=request.scene,
+            character=request.character,
+            direction=request.direction,
+            custom_voice_type=request.custom_voice_type,
+            custom_voice_data=request.custom_voice_data,
         )
         return result
     except Exception as e:
@@ -61,6 +73,12 @@ async def get_audio(filename: str):
     if not audio_path.exists():
         raise HTTPException(status_code=404, detail="Audio file not found")
 
+    # 根据文件扩展名设置正确的 media_type
+    if safe_name.endswith(".wav"):
+        media_type = "audio/wav"
+    else:
+        media_type = "audio/mpeg"
+
     return FileResponse(
-        path=str(audio_path), media_type="audio/mpeg", filename=safe_name
+        path=str(audio_path), media_type=media_type, filename=safe_name
     )

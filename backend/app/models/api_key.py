@@ -13,6 +13,8 @@ class ApiKey(Base):
     provider = Column(String(50), nullable=False)  # xiaomi, openai, baidu等
     # TODO: Encrypt api_key before production. Acceptable for MVP but must be tracked.
     api_key = Column(Text, nullable=False)
+    base_url = Column(String(500), nullable=True)  # 自定义API端点
+    model_name = Column(String(100), nullable=True)  # 自定义模型名称
     is_default = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

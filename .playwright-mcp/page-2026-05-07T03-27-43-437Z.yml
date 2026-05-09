@@ -1,0 +1,80 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e31]:
+    - button "?" [ref=e34] [cursor=pointer]:
+      - generic [ref=e35]: "?"
+    - button
+    - generic [ref=e39]:
+      - banner [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - img [ref=e46] [cursor=pointer]
+            - generic [ref=e50] [cursor=pointer]:
+              - generic [ref=e51]: Qwen3.6-Plus
+              - img [ref=e53]
+          - generic [ref=e56]:
+            - generic [ref=e58] [cursor=pointer]: 登录
+            - generic [ref=e60] [cursor=pointer]: 注册
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - generic [ref=e65]: 今天有什么计划？
+          - generic [ref=e68]:
+            - generic [ref=e71]:
+              - img [ref=e77] [cursor=pointer]
+              - textbox "有什么我能帮您的吗？" [ref=e79]
+              - generic [ref=e80]:
+                - generic [ref=e84] [cursor=pointer]:
+                  - combobox [ref=e86]
+                  - generic [ref=e88]:
+                    - generic [ref=e89]: 自动
+                    - generic:
+                      - img
+                - img [ref=e94] [cursor=pointer]
+            - generic [ref=e97]:
+              - button [ref=e98] [cursor=pointer]:
+                - img [ref=e99]:
+                  - img [ref=e100]
+              - generic [ref=e102]:
+                - generic [ref=e103]:
+                  - generic [ref=e104]: 选择一种风格来创建你的第一张图像。
+                  - generic [ref=e105]:
+                    - button "开始使用" [ref=e106] [cursor=pointer]:
+                      - generic [ref=e107]: 开始使用
+                    - button [ref=e108] [cursor=pointer]:
+                      - img [ref=e110]:
+                        - img [ref=e111]
+                - generic [ref=e113]:
+                  - generic:
+                    - img [ref=e115] [cursor=pointer]
+                    - img [ref=e117] [cursor=pointer]
+                    - img [ref=e119] [cursor=pointer]
+        - generic [ref=e120]: 使用 Qwen Studio，即表示您同意我们的 用户条款 和 隐私协议。
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic: 模型
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic: Qwen3.6-Plus
+              - generic: Qwen3.6系列最新的大语言模型，支持文本和多模态任务。
+            - generic:
+              - img:
+                - img
+          - generic:
+            - generic:
+              - generic:
+                - generic: Qwen3.6-Max-Preview
+              - generic: 旗舰模型 Qwen3.6 的预览版，提供业界领先的性能。暂不支持搜索和代码解释器工具。
+          - generic:
+            - generic:
+              - generic:
+                - generic: Qwen3.6-27B
+              - generic: Qwen3.6 开源系列中的 27B 稠密模型，支持文本和多模态任务，并针对本地部署进行了深度优化。
+        - generic:
+          - generic:
+            - generic: 登录
+          - generic:
+            - generic: 注册

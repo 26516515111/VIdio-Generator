@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Button, Card, Divider, message, Space, Typography } from 'antd';
+import { Button, Card, Divider, Input, message, Space, Tag, Typography } from 'antd';
 import {
   DownloadOutlined,
   PauseCircleOutlined,
@@ -8,17 +8,29 @@ import {
 import { ttsApi } from '../services/ttsApi';
 
 const { Paragraph, Text } = Typography;
+const { TextArea } = Input;
 
 interface ResultDisplayProps {
   processedText: string;
   emotion: string;
   audioUrl?: string;
+  // Director Mode props
+  directorMode?: boolean;
+  styleTags?: string;
+  audioTags?: string[];
+  onProcessedTextChange?: (text: string) => void;
+  onStyleTagsChange?: (tags: string) => void;
 }
 
 const ResultDisplay: React.FC<ResultDisplayProps> = ({
   processedText,
   emotion,
   audioUrl,
+  directorMode = false,
+  styleTags = '',
+  audioTags = [],
+  onProcessedTextChange,
+  onStyleTagsChange,
 }) => {
   const [loading, setLoading] = useState(false);
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(
@@ -35,7 +47,12 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
 
     setLoading(true);
     try {
-      const result = await ttsApi.synthesize(processedText, 'default', emotion);
+      const result = await ttsApi.synthesize(
+        processedText,
+        'default',
+        emotion,
+        directorMode ? styleTags : undefined
+      );
       setGeneratedAudioUrl(result.audio_url);
       message.success('语音生成成功');
     } catch (error) {
@@ -70,22 +87,57 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
       <Space direction="vertical" style={{ width: '100%' }}>
         <div>
           <Text strong>处理后的文字：</Text>
-          <Paragraph
-            style={{
-              padding: 16,
-              background: '#f5f5f5',
-              borderRadius: 8,
-              marginTop: 8,
-            }}
-          >
-            {processedText || '等待处理...'}
-          </Paragraph>
+          {directorMode && onProcessedTextChange ? (
+            <TextArea
+              value={processedText}
+              onChange={(e) => onProcessedTextChange(e.target.value)}
+              placeholder="等待处理..."
+              autoSize={{ minRows: 3, maxRows: 8 }}
+              style={{ marginTop: 8 }}
+            />
+          ) : (
+            <Paragraph
+              style={{
+                padding: 16,
+                background: '#f5f5f5',
+                borderRadius: 8,
+                marginTop: 8,
+              }}
+            >
+              {processedText || '等待处理...'}
+            </Paragraph>
+          )}
         </div>
 
-        <div>
-          <Text strong>检测到的情绪：</Text>
-          <Text style={{ marginLeft: 8 }}>{emotion || '未知'}</Text>
-        </div>
+        {directorMode && (
+          <div>
+            <Text strong>风格标签：</Text>
+            <Input
+              value={styleTags}
+              onChange={(e) => onStyleTagsChange?.(e.target.value)}
+              placeholder="输入风格标签"
+              style={{ marginTop: 8 }}
+            />
+          </div>
+        )}
+
+        {directorMode && audioTags.length > 0 && (
+          <div>
+            <Text strong>音频标签：</Text>
+            <div style={{ marginTop: 8 }}>
+              {audioTags.map((tag, index) => (
+                <Tag key={index} color="blue">{tag}</Tag>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!directorMode && (
+          <div>
+            <Text strong>检测到的情绪：</Text>
+            <Text style={{ marginLeft: 8 }}>{emotion || '未知'}</Text>
+          </div>
+        )}
 
         <Divider />
 

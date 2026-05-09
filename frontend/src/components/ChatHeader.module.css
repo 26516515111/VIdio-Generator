@@ -1,0 +1,80 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-lg);
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.logoIcon {
+  font-size: 24px;
+  color: var(--color-accent);
+}
+
+.logoText {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+  justify-content: center;
+}
+
+.newChatBtn {
+  flex-shrink: 0;
+}
+
+.modelSelector {
+  min-width: 180px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.userDropdown {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.username {
+  color: var(--color-text-primary);
+  font-size: 14px;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

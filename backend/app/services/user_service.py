@@ -43,6 +43,8 @@ class UserService:
         service_type: str,
         provider: str,
         api_key: str,
+        base_url: Optional[str] = None,
+        model_name: Optional[str] = None,
         is_default: bool = False,
     ) -> ApiKey:
         # 如果设置为默认，先取消其他默认
@@ -52,12 +54,23 @@ class UserService:
                 ApiKey.service_type == service_type,
                 ApiKey.is_default.is_(True),
             ).update({"is_default": False})
+        
+        # 如果是该服务类型的第一个API key，自动设为默认
+        existing_keys = db.query(ApiKey).filter(
+            ApiKey.user_id == user_id,
+            ApiKey.service_type == service_type,
+        ).count()
+        
+        if existing_keys == 0:
+            is_default = True
 
         db_api_key = ApiKey(
             user_id=user_id,
             service_type=service_type,
             provider=provider,
             api_key=api_key,
+            base_url=base_url,
+            model_name=model_name,
             is_default=is_default,
         )
         db.add(db_api_key)

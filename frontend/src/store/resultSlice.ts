@@ -7,6 +7,9 @@ interface ResultState {
   audioUrl: string | null;
   loading: boolean;
   error: string | null;
+  styleTags: string;
+  audioTags: string[];
+  rawOutput: string;
 }
 
 const initialState: ResultState = {
@@ -15,6 +18,9 @@ const initialState: ResultState = {
   audioUrl: null,
   loading: false,
   error: null,
+  styleTags: '',
+  audioTags: [],
+  rawOutput: '',
 };
 
 const resultSlice = createSlice({
@@ -36,11 +42,23 @@ const resultSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
+    setStyleTags: (state, action: PayloadAction<string>) => {
+      state.styleTags = action.payload;
+    },
+    setAudioTags: (state, action: PayloadAction<string[]>) => {
+      state.audioTags = action.payload;
+    },
+    setRawOutput: (state, action: PayloadAction<string>) => {
+      state.rawOutput = action.payload;
+    },
     resetResult: (state) => {
       state.processedText = '';
       state.detectedEmotion = '';
       state.audioUrl = null;
       state.error = null;
+      state.styleTags = '';
+      state.audioTags = [];
+      state.rawOutput = '';
     },
   },
 });
@@ -51,6 +69,9 @@ export const {
   setAudioUrl,
   setLoading,
   setError,
+  setStyleTags,
+  setAudioTags,
+  setRawOutput,
   resetResult,
 } = resultSlice.actions;
 export default resultSlice.reducer;

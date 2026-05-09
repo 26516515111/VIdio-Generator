@@ -1,0 +1,141 @@
+.messageRow {
+  display: flex;
+  margin-bottom: var(--spacing-md);
+  padding: 0 var(--spacing-md);
+}
+
+.messageRowUser {
+  justify-content: flex-end;
+}
+
+.messageRowAssistant {
+  justify-content: flex-start;
+}
+
+.bubble {
+  max-width: 70%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  position: relative;
+  word-break: break-word;
+}
+
+.bubbleUser {
+  background: var(--color-accent);
+  color: #ffffff;
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.bubbleAssistant {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.content {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.processedText {
+  margin-top: var(--spacing-xs);
+  padding-top: var(--spacing-xs);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.tag {
+  font-size: 12px;
+  padding: 2px var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  background: rgba(22, 119, 255, 0.1);
+  color: var(--color-accent);
+}
+
+.audioPlayer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-sm);
+}
+
+.audioBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.audioBtn:hover {
+  background: var(--color-accent-hover);
+}
+
+.downloadBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.downloadBtn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.timestamp {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-xs);
+  text-align: right;
+}
+
+.timestampAssistant {
+  text-align: left;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(22, 119, 255, 0.3);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: var(--spacing-xs);
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

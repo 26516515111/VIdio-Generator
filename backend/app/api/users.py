@@ -28,8 +28,10 @@ class UserResponse(BaseModel):
 
 class ApiKeyCreate(BaseModel):
     service_type: Literal["ocr", "llm", "tts"]
-    provider: Literal["xiaomi", "openai", "baidu", "tencent"]
+    provider: Literal["xiaomi", "xiaomi-tokenplan", "openai", "baidu", "tencent"]
     api_key: str
+    base_url: Optional[str] = None
+    model_name: Optional[str] = None
     is_default: bool = False
 
 
@@ -37,6 +39,8 @@ class ApiKeyResponse(BaseModel):
     id: int
     service_type: str
     provider: str
+    base_url: Optional[str] = None
+    model_name: Optional[str] = None
     is_default: bool
 
     class Config:
@@ -81,6 +85,8 @@ def create_api_key(
         api_key_data.service_type,
         api_key_data.provider,
         api_key_data.api_key,
+        api_key_data.base_url,
+        api_key_data.model_name,
         api_key_data.is_default,
     )
 
@@ -95,3 +101,44 @@ def delete_api_key(
     if not success:
         raise HTTPException(status_code=404, detail="API key not found")
     return {"message": "API key deleted successfully"}
+
+
+class ModelInfo(BaseModel):
+    id: int
+    provider: str
+    model_name: Optional[str] = None
+    is_default: bool
+
+
+class ModelsByType(BaseModel):
+    ocr: List[ModelInfo]
+    llm: List[ModelInfo]
+    tts: List[ModelInfo]
+
+
+@router.get("/models", response_model=ModelsByType)
+def get_available_models(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """获取用户可用的模型，按服务类型分组"""
+    ocr_keys = user_service.get_user_api_keys(db, current_user.id, service_type="ocr")
+    llm_keys = user_service.get_user_api_keys(db, current_user.id, service_type="llm")
+    tts_keys = user_service.get_user_api_keys(db, current_user.id, service_type="tts")
+
+    def to_model_info(keys):
+        return [
+            ModelInfo(
+                id=k.id,
+                provider=k.provider,
+                model_name=k.model_name,
+                is_default=k.is_default,
+            )
+            for k in keys
+        ]
+
+    return ModelsByType(
+        ocr=to_model_info(ocr_keys),
+        llm=to_model_info(llm_keys),
+        tts=to_model_info(tts_keys),
+    )

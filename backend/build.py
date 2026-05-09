@@ -1,6 +1,33 @@
+import os
 import subprocess
 import sys
+import shutil
 from pathlib import Path
+
+
+def find_npm():
+    """查找 npm 可执行文件路径"""
+    # 1. 检查环境变量
+    npm_path = os.environ.get("NPM_PATH")
+    if npm_path and Path(npm_path).exists():
+        return npm_path
+
+    # 2. 从 PATH 中查找
+    npm_in_path = shutil.which("npm")
+    if npm_in_path:
+        return npm_in_path
+
+    # 3. 常见安装路径
+    common_paths = [
+        r"C:\Program Files\nodejs\npm.cmd",
+        r"C:\Program Files (x86)\nodejs\npm.cmd",
+        Path.home() / "AppData" / "Roaming" / "npm" / "npm.cmd",
+    ]
+    for path in common_paths:
+        if Path(path).exists():
+            return str(path)
+
+    return None
 
 
 def build_frontend():
@@ -13,11 +40,24 @@ def build_frontend():
         print("Skipping frontend build.")
         return False
 
+    # 查找 npm
+    npm_cmd = find_npm()
+    if not npm_cmd:
+        print("\n❌ Error: npm not found!")
+        print("\nPlease ensure Node.js is installed and one of the following:")
+        print("  1. Add Node.js to your PATH environment variable")
+        print("  2. Set NPM_PATH environment variable to your npm.cmd path")
+        print("     Example: set NPM_PATH=C:\\Program Files\\nodejs\\npm.cmd")
+        print("\nDownload Node.js from: https://nodejs.org/")
+        return False
+
+    print(f"Using npm: {npm_cmd}")
+
     # 安装依赖
-    subprocess.run(["npm", "install"], cwd=frontend_dir, check=True)
+    subprocess.run([npm_cmd, "install"], cwd=frontend_dir, check=True)
 
     # 构建
-    subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
+    subprocess.run([npm_cmd, "run", "build"], cwd=frontend_dir, check=True)
 
     print("Frontend built successfully!")
     return True
