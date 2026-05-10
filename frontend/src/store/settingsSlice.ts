@@ -14,6 +14,7 @@ const initialState: SettingsState = {
   selectedModel: '',
   customVoiceFile: null,
   customVoiceName: '',
+  drawerOpen: false,
 };
 
 const settingsSlice = createSlice({
@@ -56,6 +57,9 @@ const settingsSlice = createSlice({
     setCustomVoiceName: (state, action: PayloadAction<string>) => {
       state.customVoiceName = action.payload;
     },
+    setDrawerOpen: (state, action: PayloadAction<boolean>) => {
+      state.drawerOpen = action.payload;
+    },
     resetSettings: () => initialState,
   },
 });
@@ -73,6 +77,7 @@ export const {
   setSelectedModel,
   setCustomVoiceFile,
   setCustomVoiceName,
+  setDrawerOpen,
   resetSettings,
 } = settingsSlice.actions;
 export default settingsSlice.reducer;

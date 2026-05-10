@@ -29,6 +29,10 @@ interface EmptyStateProps {
 const EmptyState: React.FC<EmptyStateProps> = ({ onCapabilityClick }) => {
   return (
     <div className={styles.container}>
+      <div className={styles.bgPattern} />
+      <div className={styles.brandMark}>
+        <AudioOutlined />
+      </div>
       <h1 className={styles.title}>语音转换助手</h1>
       <p className={styles.subtitle}>
         智能语音转换工具，支持文字输入和图片OCR，通过大模型加工后生成自然语音
@@ -44,6 +48,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onCapabilityClick }) => {
             <span className={styles.cardLabel}>{cap.label}</span>
           </div>
         ))}
+      </div>
+      <div className={styles.hint}>
+        按 <span className={styles.hintKey}>Enter</span> 发送，<span className={styles.hintKey}>Shift+Enter</span> 换行
       </div>
     </div>
   );

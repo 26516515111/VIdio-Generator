@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlayCircleOutlined, PauseCircleOutlined, DownloadOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, PauseCircleOutlined, DownloadOutlined, AudioOutlined, UserOutlined } from '@ant-design/icons';
 import type { ChatMessage as ChatMessageType } from '../types/chat';
 import styles from './ChatMessage.module.css';
 
@@ -44,38 +44,52 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   const tags = message.audioTags || (message.styleTags ? [message.styleTags] : []);
 
   return (
-    <div
-      className={`${styles.messageRow} ${isUser ? styles.messageRowUser : styles.messageRowAssistant}`}
-    >
-      <div className={`${styles.bubble} ${isUser ? styles.bubbleUser : styles.bubbleAssistant}`}>
-        {message.isProcessing && <span className={styles.spinner} />}
-        <div className={styles.content}>{message.content}</div>
+    <div className={`${styles.messageRow} ${isUser ? styles.messageRowUser : styles.messageRowAssistant}`}>
+      <div className={`${styles.avatar} ${isUser ? styles.avatarUser : styles.avatarAssistant}`}>
+        {isUser ? <UserOutlined /> : <AudioOutlined />}
+      </div>
+      <div className={styles.bubbleWrapper}>
+        <div className={`${styles.bubble} ${isUser ? styles.bubbleUser : styles.bubbleAssistant}`}>
+          {message.isProcessing && <span className={styles.spinner} />}
+          <div className={styles.content}>{message.content}</div>
 
-        {!isUser && message.processedText && message.processedText !== message.content && (
-          <div className={styles.processedText}>润色: {message.processedText}</div>
-        )}
+          {!isUser && message.processedText && message.processedText !== message.content && (
+            <div className={styles.processedText}>
+              <div className={styles.processedLabel}>润色结果</div>
+              {message.processedText}
+            </div>
+          )}
 
-        {!isUser && tags.length > 0 && (
-          <div className={styles.tags}>
-            {tags.map((tag, i) => (
-              <span key={i} className={styles.tag}>{tag}</span>
-            ))}
+          {!isUser && tags.length > 0 && (
+            <div className={styles.tags}>
+              {tags.map((tag, i) => (
+                <span key={i} className={styles.tag}>{tag}</span>
+              ))}
+            </div>
+          )}
+
+          {!isUser && message.audioUrl && (
+            <div className={styles.audioPlayer}>
+              <button className={styles.audioBtn} onClick={handlePlayPause}>
+                {isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+              </button>
+              <div className={styles.waveform}>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`${styles.waveBar} ${isPlaying ? styles.waveBarPlaying : ''}`}
+                  />
+                ))}
+              </div>
+              <button className={styles.downloadBtn} onClick={handleDownload}>
+                <DownloadOutlined />
+              </button>
+            </div>
+          )}
+
+          <div className={`${styles.timestamp} ${!isUser ? styles.timestampAssistant : ''}`}>
+            {formatTime(message.timestamp)}
           </div>
-        )}
-
-        {!isUser && message.audioUrl && (
-          <div className={styles.audioPlayer}>
-            <button className={styles.audioBtn} onClick={handlePlayPause}>
-              {isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-            </button>
-            <button className={styles.downloadBtn} onClick={handleDownload}>
-              <DownloadOutlined />
-            </button>
-          </div>
-        )}
-
-        <div className={`${styles.timestamp} ${!isUser ? styles.timestampAssistant : ''}`}>
-          {formatTime(message.timestamp)}
         </div>
       </div>
     </div>

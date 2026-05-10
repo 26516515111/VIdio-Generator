@@ -52,4 +52,12 @@ export const llmApi = {
     });
     return response.data;
   },
+
+  ocrToScene: async (ocrText: string, provider?: string) => {
+    const response = await api.post('/llm/ocr-to-scene', {
+      ocr_text: ocrText,
+      provider,
+    });
+    return response.data;
+  },
 };

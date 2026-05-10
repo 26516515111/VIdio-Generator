@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Select, Switch, message, List, Tag, Popconfirm, Space } from 'antd';
-import { UserOutlined, KeyOutlined, DeleteOutlined, LinkOutlined, RobotOutlined } from '@ant-design/icons';
+import { UserOutlined, KeyOutlined, DeleteOutlined, LinkOutlined, RobotOutlined, ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../store';
 import api from '../services/api';
 
@@ -56,8 +57,10 @@ const defaultBaseUrls: Record<string, string> = {
 
 const Profile: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const navigate = useNavigate();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
   const [selectedProvider, setSelectedProvider] = useState<string>('xiaomi-tokenplan');
 
@@ -127,8 +130,29 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      // Refresh API keys to ensure latest state
+      await fetchApiKeys();
+      message.success('保存成功');
+      navigate('/');
+    } catch (error) {
+      message.error('保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <div style={{ padding: 24 }}>
+    <div style={{ padding: 24, height: '100vh', overflowY: 'auto', background: 'var(--color-bg-primary)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}>
+          返回
+        </Button>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: 'var(--color-text-primary)' }}>个人中心</h2>
+      </div>
+
       <Card title="个人信息" style={{ marginBottom: 24 }}>
         <p>
           <UserOutlined /> 用户名：{user?.username}
@@ -241,6 +265,15 @@ const Profile: React.FC = () => {
           )}
         />
       </Card>
+
+      <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+        <Button onClick={() => navigate('/')}>
+          取消
+        </Button>
+        <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
+          保存并返回
+        </Button>
+      </div>
     </div>
   );
 };

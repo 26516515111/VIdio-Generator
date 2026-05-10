@@ -87,7 +87,6 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({
 
   const handleCustomVoiceTextChange = (text: string) => {
     setCustomVoiceText(text);
-    // Store text description as customVoiceName for voice design mode
     if (customVoiceMode === 'text') {
       onCustomVoiceChange?.(null, text);
     }
@@ -95,7 +94,6 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({
 
   const handleCustomVoiceModeChange = (mode: 'text' | 'file') => {
     setCustomVoiceMode(mode);
-    // Reset custom voice data when switching modes
     if (mode === 'text') {
       onCustomVoiceChange?.(null, customVoiceText);
     } else {
@@ -105,41 +103,46 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({
 
   return (
     <div className={styles.container}>
-      <Select
-        className={styles.select}
-        placeholder="选择音色"
-        value={value || undefined}
-        onChange={onChange}
-        options={voiceOptions.map((v) => ({
-          value: v.value,
-          label: (
-            <div>
-              <div>{v.label}</div>
-              <div style={{ fontSize: 12, color: '#999' }}>{v.desc}</div>
-            </div>
-          ),
-        }))}
-      />
-      <button
-        className={`${styles.previewBtn} ${isPlaying ? styles.previewBtnPlaying : ''}`}
-        onClick={handlePreview}
-        disabled={!previewUrl}
-        title="试听音色"
-      >
-        {isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-      </button>
+      <div className={styles.selectRow}>
+        <Select
+          className={styles.select}
+          placeholder="选择音色"
+          value={value || undefined}
+          onChange={onChange}
+          options={voiceOptions.map((v) => ({
+            value: v.value,
+            label: (
+              <div>
+                <div style={{ fontWeight: 500 }}>{v.label}</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>{v.desc}</div>
+              </div>
+            ),
+          }))}
+        />
+        <button
+          className={`${styles.previewBtn} ${isPlaying ? styles.previewBtnPlaying : ''}`}
+          onClick={handlePreview}
+          disabled={!previewUrl}
+          title="试听音色"
+        >
+          {isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+        </button>
+      </div>
 
-      {/* Custom voice area with two modes */}
       {value === 'custom' && (
         <div className={styles.customVoiceArea}>
           <Radio.Group
             value={customVoiceMode}
             onChange={(e) => handleCustomVoiceModeChange(e.target.value)}
             size="small"
-            style={{ marginBottom: 8 }}
+            style={{ marginBottom: 8, width: '100%' }}
           >
-            <Radio.Button value="text">文本描述</Radio.Button>
-            <Radio.Button value="file">音频克隆</Radio.Button>
+            <Radio.Button value="text" style={{ width: '50%', textAlign: 'center' }}>
+              文本描述
+            </Radio.Button>
+            <Radio.Button value="file" style={{ width: '50%', textAlign: 'center' }}>
+              音频克隆
+            </Radio.Button>
           </Radio.Group>
 
           {customVoiceMode === 'text' ? (

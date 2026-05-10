@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.exe
 .Python
 env/
 venv/
@@ -42,6 +43,8 @@ yarn-error.log*
 
 # Generated audio files
 backend/data/audio/*.mp3
+backend/dist
+backend/build
 
 # PyInstaller
 *.manifest

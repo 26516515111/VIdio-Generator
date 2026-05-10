@@ -1,9 +1,16 @@
+import sys
 from pydantic_settings import BaseSettings
 from pathlib import Path
 
+def _get_app_dir() -> Path:
+    """获取应用目录：打包后为exe所在目录，开发时为backend目录"""
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable).parent
+    return Path(__file__).parent.parent
+
 class Settings(BaseSettings):
     # 数据库配置
-    DATABASE_URL: str = f"sqlite:///{Path(__file__).parent.parent / 'data' / 'app.db'}"
+    DATABASE_URL: str = f"sqlite:///{_get_app_dir() / 'data' / 'app.db'}"
     
     # JWT配置
     SECRET_KEY: str = "dev-secret-key-change-in-production-12345"

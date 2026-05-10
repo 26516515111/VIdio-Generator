@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { message } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { addMessage, updateMessage, setProcessing } from '../store/chatSlice';
+import { setDrawerOpen } from '../store/settingsSlice';
 import type { ChatMessage } from '../types/chat';
 import ChatSidebar from '../components/ChatSidebar';
 import ChatHeader from '../components/ChatHeader';
@@ -11,17 +12,25 @@ import ChatInput from '../components/ChatInput';
 import SettingsDrawer from '../components/SettingsDrawer';
 import { llmApi } from '../services/llmApi';
 import { ttsApi } from '../services/ttsApi';
+import styles from './Home.module.css';
 
 const generateId = () => `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 const Home: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { isProcessing } = useSelector((state: RootState) => state.chat);
+  const { isProcessing, conversations, activeConversationId } = useSelector((state: RootState) => state.chat);
   const settings = useSelector((state: RootState) => state.settings);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsOpen = settings.drawerOpen;
+  const [polishTrigger, setPolishTrigger] = useState(0);
+
+  // Derive active messages from the store
+  const activeConversation = useMemo(
+    () => conversations.find(c => c.id === activeConversationId) || null,
+    [conversations, activeConversationId]
+  );
+  const messages = activeConversation?.messages ?? [];
 
   const handleSend = useCallback(async (text: string) => {
-    // Add user message
     const userMessage: ChatMessage = {
       id: generateId(),
       role: 'user',
@@ -31,7 +40,6 @@ const Home: React.FC = () => {
     };
     dispatch(addMessage(userMessage));
 
-    // Add assistant placeholder
     const assistantId = generateId();
     const assistantMessage: ChatMessage = {
       id: assistantId,
@@ -43,21 +51,13 @@ const Home: React.FC = () => {
     dispatch(addMessage(assistantMessage));
     dispatch(setProcessing(true));
 
-    // Parse selectedModel (format: "service_type:provider:model_name")
     const modelParts = settings.selectedModel.split(':');
     const provider = modelParts.length >= 2 ? modelParts[1] : 'xiaomi-tokenplan';
 
     try {
-      // Director mode: skip LLM, send text directly to TTS with director instructions
-      // Normal mode: send text directly to TTS (no LLM processing unless AI polish is used)
       let processedText = text;
-      
-      // Note: AI polish is handled separately by handlePolish function
-      // Here we just send the text directly to TTS
-
-      // Generate audio - convert scene to style description using LLM (only if scene exists)
       let styleDescription = settings.scene;
-      
+
       if (!settings.directorMode && settings.scene) {
         try {
           const styleResult = await llmApi.sceneToStyle(settings.scene, provider);
@@ -68,29 +68,24 @@ const Home: React.FC = () => {
         }
       }
 
-      // TTS call
-      // Determine custom voice parameters
       let customVoiceType: string | undefined;
       let customVoiceData: string | undefined;
 
       if (settings.selectedVoice === 'custom') {
         if (settings.customVoiceFile) {
-          // Voice clone mode
           customVoiceType = 'voiceclone';
-          // Convert file to base64
           const fileReader = new FileReader();
           const base64 = await new Promise<string>((resolve) => {
             fileReader.onload = () => {
               const result = fileReader.result as string;
-              resolve(result.split(',')[1]); // Remove data:audio/mpeg;base64, prefix
+              resolve(result.split(',')[1]);
             };
             fileReader.readAsDataURL(settings.customVoiceFile!);
           });
           customVoiceData = base64;
         } else if (settings.customVoiceName) {
-          // Voice design mode
           customVoiceType = 'voicedesign';
-          customVoiceData = settings.customVoiceName; // Text description
+          customVoiceData = settings.customVoiceName;
         }
       }
 
@@ -98,7 +93,7 @@ const Home: React.FC = () => {
         processedText,
         settings.selectedVoice,
         settings.directorMode ? undefined : settings.selectedEmotion,
-        undefined,  // No style tags
+        undefined,
         settings.directorMode ? undefined : styleDescription,
         settings.directorMode ? settings.character : undefined,
         settings.directorMode ? settings.direction : undefined,
@@ -107,7 +102,6 @@ const Home: React.FC = () => {
         provider
       );
 
-      // Update assistant message
       dispatch(updateMessage({
         id: assistantId,
         updates: {
@@ -132,10 +126,9 @@ const Home: React.FC = () => {
     } finally {
       dispatch(setProcessing(false));
     }
-  }, [dispatch, settings]);
+  }, [dispatch, settings, activeConversationId]);
 
   const handlePolish = useCallback(async (text: string): Promise<string | null> => {
-    // Parse selectedModel (format: "service_type:provider:model_name")
     const modelParts = settings.selectedModel.split(':');
     const provider = modelParts.length >= 2 ? modelParts[1] : 'xiaomi-tokenplan';
 
@@ -149,41 +142,45 @@ const Home: React.FC = () => {
     }
   }, [settings.scene, settings.selectedModel]);
 
-  const handleImageUpload = useCallback(async () => {
-    // TODO: Implement image upload with OCR
-    message.info('图片上传功能开发中');
-  }, []);
-
   const handleCapabilityClick = useCallback((capability: string) => {
     switch (capability) {
-      case 'image':
-        handleImageUpload();
+      case 'ocr':
+      case 'emotion':
+        dispatch(setDrawerOpen(true));
         break;
       case 'director':
-        setSettingsOpen(true);
+        dispatch(setDrawerOpen(true));
+        break;
+      case 'polish':
+        setPolishTrigger(t => t + 1);
+        break;
+      case 'tts':
+        document.querySelector<HTMLTextAreaElement>('textarea')?.focus();
         break;
       default:
         break;
     }
-  }, [handleImageUpload]);
+  }, [dispatch]);
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div className={styles.app}>
       <ChatSidebar />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div className={styles.main}>
         <ChatHeader />
-        <ChatHistory onCapabilityClick={handleCapabilityClick} />
+        <div className={styles.chatArea}>
+          <ChatHistory messages={messages} onCapabilityClick={handleCapabilityClick} />
+        </div>
         <ChatInput
           onSend={handleSend}
           onPolish={handlePolish}
-          onImageUpload={handleImageUpload}
-          onSettingsClick={() => setSettingsOpen(true)}
+          onSettingsClick={() => dispatch(setDrawerOpen(true))}
           disabled={isProcessing}
+          polishTrigger={polishTrigger}
         />
       </div>
       <SettingsDrawer
         open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
+        onClose={() => dispatch(setDrawerOpen(false))}
       />
     </div>
   );

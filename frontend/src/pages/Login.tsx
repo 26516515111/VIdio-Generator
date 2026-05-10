@@ -20,7 +20,8 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Card title="登录" style={{ maxWidth: 400, margin: '100px auto' }}>
+    <div style={{ height: '100vh', overflowY: 'auto', background: 'var(--color-bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <Card title="登录" style={{ maxWidth: 400, width: '100%' }}>
       {error && (
         <div style={{ color: 'red', marginBottom: 16 }}>{error}</div>
       )}
@@ -43,6 +44,7 @@ const Login: React.FC = () => {
         </Form.Item>
       </Form>
     </Card>
+    </div>
   );
 };
 

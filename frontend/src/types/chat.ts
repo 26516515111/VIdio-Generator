@@ -12,8 +12,17 @@ export interface ChatMessage {
   isProcessing?: boolean;
 }
 
-export interface ChatState {
+export interface Conversation {
+  id: string;
+  title: string;
   messages: ChatMessage[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface ChatState {
+  conversations: Conversation[];
+  activeConversationId: string | null;
   isProcessing: boolean;
 }
 
@@ -32,4 +41,5 @@ export interface SettingsState {
   selectedModel: string;
   customVoiceFile: File | null;
   customVoiceName: string;
+  drawerOpen: boolean;
 }

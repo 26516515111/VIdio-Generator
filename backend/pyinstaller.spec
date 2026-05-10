@@ -1,5 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import sys
+sys.setrecursionlimit(sys.getrecursionlimit() * 5)
+
 import os
 
 block_cipher = None
@@ -28,11 +31,42 @@ a = Analysis(
         'uvicorn.protocols.websockets.auto',
         'uvicorn.lifespan',
         'uvicorn.lifespan.on',
+        'passlib.handlers.bcrypt',
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        # 排除不需要的大型库以加速打包
+        'torch', 'torchvision', 'torchaudio',
+        'tensorflow', 'keras',
+        'sklearn', 'scikit-learn',
+        'pandas', 'numpy', 'scipy',
+        'matplotlib', 'PIL', 'pillow',
+        'cv2', 'opencv-python',
+        'transformers', 'langchain', 'langchain_community',
+        'nltk', 'spacy',
+        'jupyter', 'notebook', 'ipython',
+        'pytest', 'unittest',
+        'PyQt5', 'PyQt6',
+        'sphinx', 'docutils',
+        'boto3', 'botocore',
+        'dask', 'distributed',
+        'numba', 'llvmlite',
+        'bokeh', 'plotly', 'altair',
+        'xarray', 'h5py', 'tables',
+        'statsmodels', 'patsy',
+        'imageio', 'skimage',
+        'zmq', 'nacl',
+        'black', 'yapf',
+        'rich', 'pygments',
+        'onnxruntime',
+        'sentence_transformers',
+        'rapidfuzz',
+        'pyarrow', 'fsspec', 'lz4',
+        'panel', 'pyviz_comms',
+        'intake', 'xyzservices',
+    ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,

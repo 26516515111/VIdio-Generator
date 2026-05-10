@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 import httpx
 from sqlalchemy.orm import Session
 
-from ..config import settings
+from ..config import settings, _get_app_dir
 from ..services.user_service import user_service
 
 logger = logging.getLogger(__name__)
@@ -197,7 +197,7 @@ class TtsService:
             audio_bytes = base64.b64decode(audio_data)
             
             audio_filename = f"{uuid.uuid4()}.wav"
-            audio_path = Path("data/audio") / audio_filename
+            audio_path = _get_app_dir() / "data" / "audio" / audio_filename
             audio_path.parent.mkdir(parents=True, exist_ok=True)
 
             with open(audio_path, "wb") as f:
@@ -241,7 +241,7 @@ class TtsService:
             # 保存音频文件
             audio_data = response.content
             audio_filename = f"{uuid.uuid4()}.mp3"
-            audio_path = Path("data/audio") / audio_filename
+            audio_path = _get_app_dir() / "data" / "audio" / audio_filename
             audio_path.parent.mkdir(parents=True, exist_ok=True)
 
             with open(audio_path, "wb") as f:

@@ -53,6 +53,15 @@ class SceneToStyleResponse(BaseModel):
     style_description: str
 
 
+class OcrToSceneRequest(BaseModel):
+    ocr_text: str
+    provider: Optional[str] = None
+
+
+class OcrToSceneResponse(BaseModel):
+    scene_description: str
+
+
 @router.post("/process", response_model=TextProcessResponse)
 async def process_text(
     request: TextProcessRequest,
@@ -116,4 +125,24 @@ async def process_scene_to_style(
         return {"style_description": result}
     except Exception as e:
         logger.exception("Failed to process scene to style")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/ocr-to-scene", response_model=OcrToSceneResponse)
+async def process_ocr_to_scene(
+    request: OcrToSceneRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """将OCR提取的内容转换为场景描述（不包含语音语调）"""
+    try:
+        result = await llm_service.process_ocr_to_scene(
+            ocr_text=request.ocr_text,
+            user_id=current_user.id,
+            db=db,
+            provider=request.provider,
+        )
+        return {"scene_description": result}
+    except Exception as e:
+        logger.exception("Failed to process OCR to scene")
         raise HTTPException(status_code=500, detail="Internal server error")

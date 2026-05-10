@@ -501,7 +501,7 @@ OCR提取的文字：
         db: Session = None,
         provider: Optional[str] = None,
     ) -> str:
-        """将场景描述转换为TTS风格描述"""
+        """将场景描述转换为TTS风格描述（包含语音语调）"""
         logger.info(f"Processing scene to style with provider: {provider}, user_id: {user_id}")
         
         # 获取用户的API密钥
@@ -545,6 +545,69 @@ OCR提取的文字：
             return await self._call_xiaomi_scene_to_style(prompt, api_key_value, base_url, model_name)
         elif resolved_provider == "openai":
             return await self._call_openai_scene_to_style(prompt, api_key_value, base_url, model_name)
+        else:
+            raise ValueError(f"Unsupported LLM provider: {resolved_provider}")
+
+    async def process_ocr_to_scene(
+        self,
+        ocr_text: str,
+        user_id: int = None,
+        db: Session = None,
+        provider: Optional[str] = None,
+    ) -> str:
+        """将OCR提取的文字转换为场景描述（只描述场景内容，不描述语音语调）"""
+        logger.info(f"Processing OCR to scene with provider: {provider}, user_id: {user_id}")
+        
+        # 获取用户的API密钥
+        api_key_value = settings.XIAOMI_TOKENPLAN_API_KEY
+        resolved_provider = provider or "xiaomi-tokenplan"
+        base_url = settings.XIAOMI_TOKENPLAN_API_BASE
+        model_name = None
+
+        if db and user_id:
+            if provider:
+                api_keys = user_service.get_user_api_keys(
+                    db, user_id, service_type="llm"
+                )
+                api_key = next(
+                    (k for k in api_keys if k.provider == provider), None
+                )
+            else:
+                api_key = user_service.get_default_api_key(
+                    db, user_id, "llm"
+                )
+                if not api_key:
+                    api_keys = user_service.get_user_api_keys(
+                        db, user_id, service_type="llm"
+                    )
+                    api_key = api_keys[0] if api_keys else None
+
+            if api_key:
+                api_key_value = api_key.api_key
+                resolved_provider = api_key.provider
+                base_url = api_key.base_url
+                model_name = api_key.model_name
+
+        if not api_key_value:
+            raise Exception("未找到API密钥，请先在个人中心配置API密钥")
+        
+        # 构建提示词 - 只描述场景内容
+        prompt = f"""请根据以下OCR提取的内容，描述场景。
+
+OCR提取的内容：
+{ocr_text}
+
+要求：
+1. 只描述场景内容（风景、背景、环境、氛围等）
+2. 不要描述语音语调、语速、情绪等TTS相关内容
+3. 用简洁的中文描述，50-100字
+4. 不要添加任何解释，直接输出场景描述"""
+        
+        # 根据提供商调用不同的API
+        if resolved_provider in ["xiaomi", "xiaomi-tokenplan"]:
+            return await self._call_xiaomi_ocr_to_scene(prompt, api_key_value, base_url, model_name)
+        elif resolved_provider == "openai":
+            return await self._call_openai_ocr_to_scene(prompt, api_key_value, base_url, model_name)
         else:
             raise ValueError(f"Unsupported LLM provider: {resolved_provider}")
 
@@ -631,6 +694,108 @@ OCR提取的文字：
 
 场景：愤怒地指责
 风格描述：语调尖锐上扬，语速急促有力，带着压抑不住的怒火和失望，声音颤抖但充满力量。"""
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.7,
+                },
+                timeout=180.0,
+            )
+
+            if response.status_code != 200:
+                raise Exception(f"OpenAI API error: {response.text}")
+
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+
+    async def _call_xiaomi_ocr_to_scene(
+        self, prompt: str, api_key: str, base_url: Optional[str] = None, model_name: Optional[str] = None
+    ) -> str:
+        """调用小米MiMo V2.5 Pro 将OCR内容转换为场景描述（不包含语音语调）"""
+        url = f"{base_url or settings.XIAOMI_API_BASE}/chat/completions"
+        model = model_name or "mimo-v2.5-pro"
+        
+        system_prompt = """你是一位专业的场景描述专家，擅长根据OCR提取的内容描述场景。
+
+你的任务是根据OCR提取的内容，描述场景本身（风景、背景、环境、氛围等），不要描述语音语调、语速、情绪等TTS相关内容。
+
+【输出格式要求】
+- 输出为一段中文描述，50-100字
+- 只描述场景内容：风景、背景、环境、物体、人物等
+- 不要描述语音语调、语速、情绪、音色等
+- 不要添加任何解释或标记
+
+【示例】
+OCR内容：蓝天白云，绿草如茵，远处有几座小山丘
+场景描述：一片开阔的草地，天空湛蓝，白云朵朵，远处连绵的小山丘若隐若现，空气中弥漫着青草的清香。
+
+OCR内容：咖啡馆，木质桌椅，暖色灯光
+场景描述：一家温馨的咖啡馆，木质桌椅散发着淡淡的木香，暖黄色的灯光洒落，营造出舒适惬意的氛围。
+
+OCR内容：会议室，投影仪，白板上写满了笔记
+场景描述：一间宽敞的会议室，投影仪正在播放幻灯片，白板上密密麻麻写满了讨论笔记，空气中弥漫着咖啡的香气。"""
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.7,
+                },
+                timeout=180.0,
+            )
+
+            if response.status_code != 200:
+                raise Exception(f"Xiaomi LLM API error: {response.text}")
+
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+
+    async def _call_openai_ocr_to_scene(
+        self, prompt: str, api_key: str, base_url: Optional[str] = None, model_name: Optional[str] = None
+    ) -> str:
+        """调用OpenAI API 将OCR内容转换为场景描述（不包含语音语调）"""
+        url = f"{base_url or settings.OPENAI_API_BASE}/chat/completions"
+        model = model_name or "gpt-3.5-turbo"
+        
+        system_prompt = """你是一位专业的场景描述专家，擅长根据OCR提取的内容描述场景。
+
+你的任务是根据OCR提取的内容，描述场景本身（风景、背景、环境、氛围等），不要描述语音语调、语速、情绪等TTS相关内容。
+
+【输出格式要求】
+- 输出为一段中文描述，50-100字
+- 只描述场景内容：风景、背景、环境、物体、人物等
+- 不要描述语音语调、语速、情绪、音色等
+- 不要添加任何解释或标记
+
+【示例】
+OCR内容：蓝天白云，绿草如茵，远处有几座小山丘
+场景描述：一片开阔的草地，天空湛蓝，白云朵朵，远处连绵的小山丘若隐若现，空气中弥漫着青草的清香。
+
+OCR内容：咖啡馆，木质桌椅，暖色灯光
+场景描述：一家温馨的咖啡馆，木质桌椅散发着淡淡的木香，暖黄色的灯光洒落，营造出舒适惬意的氛围。
+
+OCR内容：会议室，投影仪，白板上写满了笔记
+场景描述：一间宽敞的会议室，投影仪正在播放幻灯片，白板上密密麻麻写满了讨论笔记，空气中弥漫着咖啡的香气。"""
 
         async with httpx.AsyncClient() as client:
             response = await client.post(

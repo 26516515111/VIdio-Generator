@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from ..api.auth import get_current_user
 from ..database import get_db
 from ..models.user import User
+from ..config import _get_app_dir
 from ..services.tts_service import tts_service
 
 logger = logging.getLogger(__name__)
@@ -69,7 +70,7 @@ async def get_audio(filename: str):
     """获取生成的音频文件"""
     # Prevent path traversal
     safe_name = Path(filename).name
-    audio_path = Path("data/audio") / safe_name
+    audio_path = _get_app_dir() / "data" / "audio" / safe_name
     if not audio_path.exists():
         raise HTTPException(status_code=404, detail="Audio file not found")
 

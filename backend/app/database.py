@@ -1,12 +1,10 @@
-from pathlib import Path
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-from .config import settings
+from .config import settings, _get_app_dir
 
 # 确保数据目录存在
-data_dir = Path(__file__).parent.parent / "data"
+data_dir = _get_app_dir() / "data"
 data_dir.mkdir(exist_ok=True)
 
 engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})

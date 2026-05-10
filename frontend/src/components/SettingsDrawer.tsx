@@ -51,24 +51,23 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
     fetchModels();
   }, []);
 
-  // Build options grouped by service type
   const modelOptions = [
     {
-      label: '📝 OCR 模型',
+      label: 'OCR 模型',
       options: models.ocr.map(m => ({
         value: `ocr:${m.provider}:${m.model_name || 'default'}`,
         label: `${m.provider} - ${m.model_name || '默认模型'}`,
       })),
     },
     {
-      label: '🤖 LLM 模型',
+      label: 'LLM 模型',
       options: models.llm.map(m => ({
         value: `llm:${m.provider}:${m.model_name || 'default'}`,
         label: `${m.provider} - ${m.model_name || '默认模型'}`,
       })),
     },
     {
-      label: '🔊 TTS 模型',
+      label: 'TTS 模型',
       options: models.tts.map(m => ({
         value: `tts:${m.provider}:${m.model_name || 'default'}`,
         label: `${m.provider} - ${m.model_name || '默认模型'}`,
@@ -76,32 +75,24 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
     },
   ];
 
-  // Handle image upload and OCR
   const handleImageUpload = async (file: File) => {
     setOcrLoading(true);
     setUploadedFile({ uid: file.name, name: file.name, status: 'uploading' });
-    
+
     try {
       // Step 1: OCR to extract text
       const ocrResult = await ocrApi.extractText(file);
       const extractedText = ocrResult.text;
-      
+
       if (!extractedText) {
         message.error('未能从图片中提取文字');
         setOcrLoading(false);
         return false;
       }
 
-      // Step 2: Use LLM to generate scene description from extracted text
-      const sceneResult = await llmApi.processText(
-        extractedText,
-        'unknown',
-        'neutral',
-        'scene',
-        undefined
-      );
-      
-      setOcrResult(sceneResult.processed_text);
+      // Step 2: Generate scene description from OCR text (NOT voice style, just scene content)
+      const sceneResult = await llmApi.ocrToScene(extractedText);
+      setOcrResult(sceneResult.scene_description);
       setUploadedFile({ uid: file.name, name: file.name, status: 'done' });
       message.success('图片处理完成，请确认场景描述');
     } catch (error) {
@@ -111,11 +102,10 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
     } finally {
       setOcrLoading(false);
     }
-    
-    return false; // Prevent default upload
+
+    return false;
   };
 
-  // Confirm OCR result as scene
   const handleConfirmOcrScene = () => {
     dispatch(setScene(ocrResult));
     setOcrResult('');
@@ -123,7 +113,6 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
     message.success('场景描述已保存');
   };
 
-  // Cancel OCR result
   const handleCancelOcr = () => {
     setOcrResult('');
     setUploadedFile(null);
@@ -133,7 +122,7 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
     <Drawer
       title="设置"
       placement="right"
-      width={360}
+      width={380}
       open={open}
       onClose={onClose}
     >
@@ -153,25 +142,23 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
       {/* Scene Input */}
       <div className={styles.section}>
         <div className={styles.sectionTitle}>场景描述</div>
-        
-        {/* Input Mode Toggle */}
+
         <Radio.Group
           value={sceneInputMode}
           onChange={(e) => setSceneInputMode(e.target.value)}
-          style={{ marginBottom: 12 }}
+          style={{ marginBottom: 12, width: '100%' }}
           optionType="button"
           buttonStyle="solid"
           size="small"
         >
-          <Radio.Button value="text">
+          <Radio.Button value="text" style={{ width: '50%', textAlign: 'center' }}>
             <EditOutlined /> 文字输入
           </Radio.Button>
-          <Radio.Button value="image">
+          <Radio.Button value="image" style={{ width: '50%', textAlign: 'center' }}>
             <PictureOutlined /> 图片OCR
           </Radio.Button>
         </Radio.Group>
 
-        {/* Text Input Mode */}
         {sceneInputMode === 'text' && (
           <TextArea
             rows={3}
@@ -181,7 +168,6 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
           />
         )}
 
-        {/* Image OCR Mode */}
         {sceneInputMode === 'image' && (
           <div className={styles.ocrSection}>
             <Upload
@@ -198,17 +184,16 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
                 {ocrLoading ? '正在处理图片...' : '选择图片'}
               </Button>
             </Upload>
-            
+
             {uploadedFile && (
               <div className={styles.uploadedFile}>
                 <PictureOutlined /> {uploadedFile.name}
               </div>
             )}
 
-            {/* OCR Result Preview */}
             {ocrResult && (
               <div className={styles.ocrResult}>
-                <div className={styles.ocrResultLabel}>识别的场景描述：</div>
+                <div className={styles.ocrResultLabel}>识别的场景描述</div>
                 <TextArea
                   rows={3}
                   value={ocrResult}
@@ -226,10 +211,9 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
               </div>
             )}
 
-            {/* Current Scene Display */}
             {settings.scene && !ocrResult && (
               <div className={styles.currentScene}>
-                <div className={styles.currentSceneLabel}>当前场景：</div>
+                <div className={styles.currentSceneLabel}>当前场景</div>
                 <div className={styles.currentSceneText}>{settings.scene}</div>
               </div>
             )}
@@ -262,7 +246,6 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
             size="small"
             checked={settings.directorMode}
             onChange={(checked) => dispatch(setDirectorMode(checked))}
-            style={{ marginLeft: 8 }}
           />
         </div>
         {settings.directorMode && (
@@ -311,7 +294,7 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
 
       {/* Save Button */}
       <div className={styles.saveSection}>
-        <Button type="primary" block onClick={onClose}>
+        <Button type="primary" block onClick={onClose} size="large">
           保存设置
         </Button>
       </div>
